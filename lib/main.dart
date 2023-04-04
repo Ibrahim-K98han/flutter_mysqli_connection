@@ -1,6 +1,9 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_mysqli_connection/add_edit_page.dart';
+import 'package:get/get.dart';
+import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:http/http.dart' as http;
 
 void main() {
@@ -15,13 +18,9 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  TextEditingController firstName = TextEditingController();
-  TextEditingController lastName = TextEditingController();
-  TextEditingController phone = TextEditingController();
-  TextEditingController address = TextEditingController();
-  bool editMode = false;
 
-  Future getData()async{
+
+  Future getData() async {
     var url = 'http://192.168.0.104/php_mysql_crud/read.php';
     var response = await http.get(Uri.parse(url));
     return json.decode(response.body);
@@ -52,44 +51,52 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
       home: Scaffold(
         appBar: AppBar(
-          title: Text('Insert Record'),
+          title: Text('MySql Crud'),
+        ),
+        floatingActionButton: FloatingActionButton(
+          child: Icon(Icons.add),
+        onPressed: (){
+            Get.to(AddEditPage());
+        },
         ),
         body: FutureBuilder(
           future: getData(),
-          builder: (context, snapshot){
-            if(snapshot.hasError) print(snapshot.error);
-            return snapshot.hasData ? ListView.builder(
-              itemCount: snapshot.data.length,
-              itemBuilder: (context, index){
-                List list = snapshot.data;
-                return ListTile(
-                  leading: GestureDetector(
-                    child: Icon(Icons.edit),
-                    onTap: (){
-                      debugPrint('Edit Clicked');
+          builder: (context, snapshot) {
+            if (snapshot.hasError) print(snapshot.error);
+            return snapshot.hasData
+                ? ListView.builder(
+                    itemCount: snapshot.data.length,
+                    itemBuilder: (context, index) {
+                      List list = snapshot.data;
+                      return ListTile(
+                        leading: InkWell(
+                          child: Icon(Icons.edit),
+                          onTap: () {
+                            debugPrint('Edit Clicked');
+                          },
+                        ),
+                        title: Text(
+                            '${list[index]['firstname']} ${list[index]['lastname']}'),
+                        subtitle: Text('${list[index]['phone']}'),
+                        trailing: InkWell(
+                          child: Icon(Icons.delete),
+                          onTap: () {
+                            debugPrint('Delete Clicked');
+                          },
+                        ),
+                      );
                     },
-                  ),
-                  title: Text('${list[index]['firstname']} ${list[index]['lastname']}'),
-                  subtitle: Text('${list[index]['phone']}'),
-                  trailing:  GestureDetector(
-                    child: Icon(Icons.delete),
-                    onTap: (){
-                      debugPrint('Delete Clicked');
-                    },
-                  ),
-                );
-              },
-            ) : CircularProgressIndicator();
+                  )
+                : CircularProgressIndicator();
           },
         ),
-
 
         // Column(
         //   children: [
